@@ -1,26 +1,18 @@
 from fastapi import FastAPI
-import uvicorn
-from fastapi.responses import RedirectResponse
-from database.db_manager import base_manager
-from groups import router as group_router
-from students import router as student_router
-from users import router as users_router
-from settings import SCRIPTS_TABLES_PATH, SCRIPTS_RIMARY_DATA_PATH
+from sql_base import base_worker
+from settings import BASE_PATH
+from routers.client import client_router
+from routers.ticket_list import ticket_list_router
+
+
+
+base_worker.set_base_path(BASE_PATH)
+
+if not base_worker.check_base():
+    base_worker.create_base('../sql/base.sql')
 
 app = FastAPI()
 
-app.include_router(users_router, prefix='/users')
-app.include_router(group_router, prefix="/groups")
-app.include_router(student_router, prefix='/students')
 
-
-
-@app.get('/')
-def root():
-    return RedirectResponse('/docs')
-
-
-if __name__ == '__main__':
-    if not base_manager.check_base():
-        base_manager.create_base(SCRIPTS_TABLES_PATH, SCRIPTS_RIMARY_DATA_PATH)
-    uvicorn.run(app="start_server:app", host="0.0.0.0",  port=8000, reload=True)
+app.include_router(client_router, prefix='/client')
+app.include_router(ticket_list_router, prefix='/ticket_list')
